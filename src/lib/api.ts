@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { AppConfig, TimeBlock, TimeBlockType, SeasonalStructure } from '../types';
+import { AppConfig, TimeBlock, TimeBlockType, SeasonalStructure, TaskType, Task } from '../types';
 import { DEFAULT_SEASONAL_STRUCTURE } from './seasons';
 
 /**
@@ -123,4 +123,85 @@ export async function upsertTimeBlock(
     content: data.content,
     updatedAt: data.updated_at,
   };
+}
+
+/**
+ * Tasks
+ */
+export async function getTasks(type: TaskType, startDate: string, endDate: string): Promise<Task[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('type', type)
+    .gte('date', startDate)
+    .lte('date', endDate);
+
+  if (error) {
+    console.error('Error fetching tasks:', error);
+    return [];
+  }
+
+  return data.map((d) => ({
+    id: d.id,
+    type: d.type,
+    date: d.date,
+    content: d.content,
+    isCompleted: d.is_completed,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+  }));
+}
+
+export async function createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task | null> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert({
+      type: task.type,
+      date: task.date,
+      content: task.content,
+      is_completed: task.isCompleted,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating task:', error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    type: data.type,
+    date: data.date,
+    content: data.content,
+    isCompleted: data.is_completed,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+}
+
+export async function updateTask(id: string, updates: Partial<Task>): Promise<boolean> {
+  const { error } = await supabase
+    .from('tasks')
+    .update({
+      content: updates.content,
+      is_completed: updates.isCompleted,
+      date: updates.date,
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating task:', error);
+    return false;
+  }
+  return true;
+}
+
+export async function deleteTask(id: string): Promise<boolean> {
+  const { error } = await supabase.from('tasks').delete().eq('id', id);
+  if (error) {
+    console.error('Error deleting task:', error);
+    return false;
+  }
+  return true;
 }
