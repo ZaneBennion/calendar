@@ -17,6 +17,7 @@ export type TimeBlock = {
   periodIndex: number; // month (0-11), week (1-53), or season index
   content: string;
   updatedAt: string;
+  userId: string;
 };
 
 export type TaskType = 'day' | 'week';
@@ -29,10 +30,12 @@ export type Task = {
   isCompleted: boolean;
   createdAt: string;
   updatedAt: string;
+  userId: string;
 };
 
 export type AppConfig = {
   id: string;
   seasonalStructure: SeasonalStructure;
   createdAt: string;
+  userId: string;
 };

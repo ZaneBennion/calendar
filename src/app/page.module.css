@@ -10,9 +10,31 @@
 
 .nav {
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
   padding-bottom: var(--spacing);
+}
+
+.navLinks {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.logoutButton {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: 1px solid var(--faded);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.logoutButton:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
 }
 
 .navButton {

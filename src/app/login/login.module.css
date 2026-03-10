@@ -1,0 +1,77 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: var(--spacing);
+  background-color: var(--background);
+}
+
+.loginBox {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.input {
+  padding: 0.75rem;
+  border: 1px solid var(--faded);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.input:focus {
+  border-color: var(--foreground);
+  outline: none;
+}
+
+.error {
+  color: #ff4444;
+  font-size: 0.875rem;
+}
+
+.button {
+  padding: 0.75rem;
+  background-color: var(--foreground);
+  color: var(--background);
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

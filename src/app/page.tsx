@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 import { AppConfig, SeasonalStructure } from '@/types';
 import { getAppConfig } from '@/lib/api';
@@ -16,14 +18,31 @@ export default function Home() {
   const [currentHorizon, setCurrentHorizon] = useState<Horizon>('DAY');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [config, setConfig] = useState<AppConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    async function loadConfig() {
-      const data = await getAppConfig();
-      setConfig(data);
+    async function checkUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login');
+      } else {
+        const data = await getAppConfig();
+        setConfig(data);
+        setLoading(false);
+      }
     }
-    loadConfig();
-  }, []);
+    checkUser();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  if (loading) {
+    return <div className={styles.container}>Loading...</div>;
+  }
 
   const navigateTime = (direction: 'PREV' | 'NEXT') => {
     const newDate = new Date(currentDate);
@@ -86,15 +105,20 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <nav className={styles.nav}>
-        {horizons.map((h) => (
-          <button
-            key={h}
-            className={`${styles.navButton} ${currentHorizon === h ? styles.navButtonActive : ''}`}
-            onClick={() => setCurrentHorizon(h)}
-          >
-            {h}
-          </button>
-        ))}
+        <div className={styles.navLinks}>
+          {horizons.map((h) => (
+            <button
+              key={h}
+              className={`${styles.navButton} ${currentHorizon === h ? styles.navButtonActive : ''}`}
+              onClick={() => setCurrentHorizon(h)}
+            >
+              {h}
+            </button>
+          ))}
+        </div>
+        <button className={styles.logoutButton} onClick={handleLogout}>
+          Logout
+        </button>
       </nav>
 
       <header className={styles.header}>
