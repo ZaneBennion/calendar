@@ -125,64 +125,50 @@
   color: var(--foreground);
 }
 
-.weeksGrid {
+.twoColumnLayout {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 300px 1fr;
+  gap: var(--spacing);
+  align-items: start;
 }
 
-.weekCard {
-  border: 1px solid var(--faded);
-  border-radius: var(--radius);
-  padding: 1rem;
+.leftColumn {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing);
+  position: sticky;
+  top: 0;
 }
 
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+}
+
+.weeksGrid,
 .seasonsGrid,
-.monthsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+.monthsGrid,
+.daysGrid {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
+.weekCard,
 .seasonCard,
-.monthCard {
+.monthCard,
+.dayCard {
   border: 1px solid var(--faded);
   border-radius: var(--radius);
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.seasonTitle,
-.monthTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.seasonMonths {
-  font-size: 0.75rem;
-  color: #666;
-}
-
-.daysGrid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
 }
 
 .dayCard {
-  border: 1px solid var(--faded);
-  border-radius: var(--radius);
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-height: 100px;
+  min-height: auto;
 }
 
 .dayTitle {
@@ -190,6 +176,16 @@
   font-weight: 600;
   text-transform: uppercase;
   margin-bottom: 0.25rem;
+}
+
+@media (max-width: 850px) {
+  .twoColumnLayout {
+    grid-template-columns: 1fr;
+  }
+  
+  .leftColumn {
+    position: static;
+  }
 }
 
 @media (max-width: 600px) {

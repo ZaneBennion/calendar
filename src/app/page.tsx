@@ -147,30 +147,34 @@ function YearView({ currentDate, config }: { currentDate: Date; config: AppConfi
   const year = currentDate.getFullYear();
 
   return (
-    <div className={styles.content}>
-      <GoalItem 
-        type="yearly" 
-        year={year} 
-        periodIndex={0} 
-        label="North Star Goal" 
-        className={styles.horizonBox}
-      />
+    <div className={styles.twoColumnLayout}>
+      <div className={styles.leftColumn}>
+        <GoalItem 
+          type="yearly" 
+          year={year} 
+          periodIndex={0} 
+          label="North Star Goal" 
+          className={styles.horizonBox}
+        />
+      </div>
 
-      <div className={styles.seasonsGrid}>
-        {structure.seasons.map((season, idx) => (
-          <div key={idx} className={styles.seasonCard}>
-            <GoalItem
-              type="seasonal"
-              year={year}
-              periodIndex={idx}
-              label={season.name}
-            />
-            <p className={styles.seasonMonths}>
-              {new Date(0, season.startMonth).toLocaleString('default', { month: 'short' })} -{' '}
-              {new Date(0, season.endMonth).toLocaleString('default', { month: 'short' })}
-            </p>
-          </div>
-        ))}
+      <div className={styles.rightColumn}>
+        <div className={styles.seasonsGrid}>
+          {structure.seasons.map((season, idx) => (
+            <div key={idx} className={styles.seasonCard}>
+              <GoalItem
+                type="seasonal"
+                year={year}
+                periodIndex={idx}
+                label={season.name}
+              />
+              <p className={styles.seasonMonths}>
+                {new Date(0, season.startMonth).toLocaleString('default', { month: 'short' })} -{' '}
+                {new Date(0, season.endMonth).toLocaleString('default', { month: 'short' })}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -184,34 +188,38 @@ function SeasonView({ currentDate, config }: { currentDate: Date; config: AppCon
   const months = season ? getMonthsInSeason(season) : [];
 
   return (
-    <div className={styles.content}>
-      <GoalItem 
-        type="yearly" 
-        year={year} 
-        periodIndex={0} 
-        label="Yearly Goal" 
-        className={styles.subBox}
-      />
+    <div className={styles.twoColumnLayout}>
+      <div className={styles.leftColumn}>
+        <GoalItem 
+          type="yearly" 
+          year={year} 
+          periodIndex={0} 
+          label="Yearly Goal" 
+          className={styles.subBox}
+        />
 
-      <GoalItem
-        type="seasonal"
-        year={year}
-        periodIndex={seasonIndex}
-        label={`${season?.name} Goals`}
-        className={styles.horizonBox}
-      />
+        <GoalItem
+          type="seasonal"
+          year={year}
+          periodIndex={seasonIndex}
+          label={`${season?.name} Goals`}
+          className={styles.horizonBox}
+        />
+      </div>
 
-      <div className={styles.monthsGrid}>
-        {months.map((month) => (
-          <div key={month} className={styles.monthCard}>
-            <GoalItem
-              type="monthly"
-              year={year}
-              periodIndex={month}
-              label={new Date(0, month).toLocaleString('default', { month: 'long' })}
-            />
-          </div>
-        ))}
+      <div className={styles.rightColumn}>
+        <div className={styles.monthsGrid}>
+          {months.map((month) => (
+            <div key={month} className={styles.monthCard}>
+              <GoalItem
+                type="monthly"
+                year={year}
+                periodIndex={month}
+                label={new Date(0, month).toLocaleString('default', { month: 'long' })}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -225,38 +233,42 @@ function MonthView({ currentDate, config }: { currentDate: Date; config: AppConf
   const seasonIndex = season ? structure.seasons.indexOf(season) : 0;
   
   return (
-    <div className={styles.content}>
-      <GoalItem
-        type="seasonal"
-        year={year}
-        periodIndex={seasonIndex}
-        label={`Seasonal Goal (${season?.name})`}
-        className={styles.subBox}
-      />
+    <div className={styles.twoColumnLayout}>
+      <div className={styles.leftColumn}>
+        <GoalItem
+          type="seasonal"
+          year={year}
+          periodIndex={seasonIndex}
+          label={`Seasonal Goal (${season?.name})`}
+          className={styles.subBox}
+        />
 
-      <GoalItem
-        type="monthly"
-        year={year}
-        periodIndex={month}
-        label="Monthly Goals"
-        className={styles.horizonBox}
-      />
+        <GoalItem
+          type="monthly"
+          year={year}
+          periodIndex={month}
+          label="Monthly Goals"
+          className={styles.horizonBox}
+        />
+      </div>
 
-      <div className={styles.weeksGrid}>
-        {getWeeksInMonth(year, month).map((weekStart, idx) => (
-          <div key={weekStart.toISOString()} className={styles.weekCard}>
-            <GoalItem
-              type="weekly"
-              year={weekStart.getFullYear()}
-              periodIndex={getWeekNumber(weekStart)}
-              label={`Week ${idx + 1} Goal`}
-            />
-            <TaskList
-              type="week"
-              date={formatDateISO(weekStart)}
-            />
-          </div>
-        ))}
+      <div className={styles.rightColumn}>
+        <div className={styles.weeksGrid}>
+          {getWeeksInMonth(year, month).map((weekStart, idx) => (
+            <div key={weekStart.toISOString()} className={styles.weekCard}>
+              <GoalItem
+                type="weekly"
+                year={weekStart.getFullYear()}
+                periodIndex={getWeekNumber(weekStart)}
+                label={`Week ${idx + 1} Goal`}
+              />
+              <TaskList
+                type="week"
+                date={formatDateISO(weekStart)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -270,32 +282,36 @@ function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfi
   const year = startOfWeek.getFullYear();
 
   return (
-    <div className={styles.content}>
-      <GoalItem
-        type="weekly"
-        year={year}
-        periodIndex={weekNum}
-        label="Weekly Goal"
-        className={styles.horizonBox}
-      />
+    <div className={styles.twoColumnLayout}>
+      <div className={styles.leftColumn}>
+        <GoalItem
+          type="weekly"
+          year={year}
+          periodIndex={weekNum}
+          label="Weekly Goal"
+          className={styles.horizonBox}
+        />
 
-      <TaskList
-        type="week"
-        date={startOfWeekISO}
-        title="Weekly Tasks"
-        className={styles.subBox}
-      />
+        <TaskList
+          type="week"
+          date={startOfWeekISO}
+          title="Weekly Tasks"
+          className={styles.subBox}
+        />
+      </div>
 
-      <div className={styles.daysGrid}>
-        {days.map((day) => (
-          <div key={day.toISOString()} className={styles.dayCard}>
-            <TaskList
-              type="day"
-              date={formatDateISO(day)}
-              title={day.toLocaleDateString('default', { weekday: 'short', day: 'numeric' })}
-            />
-          </div>
-        ))}
+      <div className={styles.rightColumn}>
+        <div className={styles.daysGrid}>
+          {days.map((day) => (
+            <div key={day.toISOString()} className={styles.dayCard}>
+              <TaskList
+                type="day"
+                date={formatDateISO(day)}
+                title={day.toLocaleDateString('default', { weekday: 'short', day: 'numeric' })}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -307,21 +323,25 @@ function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig
   const weekNum = getWeekNumber(startOfWeek);
 
   return (
-    <div className={styles.content}>
-      <GoalItem
-        type="weekly"
-        year={startOfWeek.getFullYear()}
-        periodIndex={weekNum}
-        label="Weekly Goal"
-        className={styles.subBox}
-      />
-
-      <div className={styles.horizonBox}>
-        <TaskList
-          type="day"
-          date={dateISO}
-          title="Tasks for Today"
+    <div className={styles.twoColumnLayout}>
+      <div className={styles.leftColumn}>
+        <GoalItem
+          type="weekly"
+          year={startOfWeek.getFullYear()}
+          periodIndex={weekNum}
+          label="Weekly Goal"
+          className={styles.subBox}
         />
+      </div>
+
+      <div className={styles.rightColumn}>
+        <div className={styles.horizonBox}>
+          <TaskList
+            type="day"
+            date={dateISO}
+            title="Tasks for Today"
+          />
+        </div>
       </div>
     </div>
   );
