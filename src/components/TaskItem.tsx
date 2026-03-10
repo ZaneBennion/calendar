@@ -1,37 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Task } from '@/types';
-import { updateTask, deleteTask } from '@/lib/api';
+import { useCalendar } from '@/context/CalendarContext';
 import styles from './TaskItem.module.css';
 
 interface TaskItemProps {
   task: Task;
-  onUpdate: () => void;
-  onDelete: () => void;
 }
 
-export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
+export default function TaskItem({ task }: TaskItemProps) {
+  const { updateTaskStatus, updateTaskContent, deleteTask } = useCalendar();
   const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState(task.content);
+  const [tempContent, setTempContent] = useState(task.content);
+
+  // Sync temp content if task changes externally
+  useEffect(() => {
+    if (!isEditing) {
+      setTempContent(task.content);
+    }
+  }, [task.content, isEditing]);
 
   const handleToggle = async () => {
-    await updateTask(task.id, { isCompleted: !task.isCompleted });
-    onUpdate();
+    await updateTaskStatus(task.id, !task.isCompleted);
   };
 
   const handleSave = async () => {
-    if (content.trim() !== task.content) {
-      await updateTask(task.id, { content });
+    if (tempContent.trim() !== task.content) {
+      await updateTaskContent(task.id, tempContent);
     }
     setIsEditing(false);
-    onUpdate();
   };
 
   const handleDelete = async () => {
     if (confirm('Delete this task?')) {
       await deleteTask(task.id);
-      onDelete();
     }
   };
 
@@ -46,8 +49,8 @@ export default function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
         <input
           type="text"
           className={styles.editInput}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
+          value={tempContent}
+          onChange={(e) => setTempContent(e.target.value)}
           onBlur={handleSave}
           onKeyDown={(e) => e.key === 'Enter' && handleSave()}
           autoFocus

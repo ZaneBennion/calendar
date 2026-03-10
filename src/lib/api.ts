@@ -3,10 +3,37 @@ import { AppConfig, TimeBlock, TimeBlockType, SeasonalStructure, TaskType, Task 
 import { DEFAULT_SEASONAL_STRUCTURE } from './seasons';
 
 /**
+ * Helper to get the authenticated user with error handling for AbortErrors (Supabase locks)
+ */
+let cachedUser: any = null;
+let lastFetchTime = 0;
+const CACHE_TTL = 1000; // 1 second cache to prevent concurrent spam
+
+async function getAuthenticatedUser() {
+  const now = Date.now();
+  if (cachedUser && (now - lastFetchTime < CACHE_TTL)) {
+    return cachedUser;
+  }
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    cachedUser = user;
+    lastFetchTime = now;
+    return user;
+  } catch (error: any) {
+    if (error.name === 'AbortError' || error.message?.includes('lock request')) {
+      console.warn('Supabase lock request aborted, using cached user or returning null.');
+      return cachedUser; // Fallback to last known user
+    }
+    throw error;
+  }
+}
+
+/**
  * App Configuration
  */
 export async function getAppConfig(): Promise<AppConfig | null> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return null;
 
   const { data, error } = await supabase
@@ -56,7 +83,7 @@ async function createDefaultAppConfig(userId: string): Promise<AppConfig | null>
 }
 
 export async function updateAppConfig(structure: SeasonalStructure): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return false;
 
   const { error } = await supabase
@@ -76,12 +103,38 @@ export async function updateAppConfig(structure: SeasonalStructure): Promise<boo
 /**
  * Time Blocks (Goals/Themes)
  */
+export async function getTimeBlocksForYear(year: number): Promise<TimeBlock[]> {
+  const user = await getAuthenticatedUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('time_blocks')
+    .select('*')
+    .eq('year', year)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('Error fetching time blocks for year:', error);
+    return [];
+  }
+
+  return data.map(d => ({
+    id: d.id,
+    type: d.type,
+    year: d.year,
+    periodIndex: d.period_index,
+    content: d.content,
+    updatedAt: d.updated_at,
+    userId: d.user_id,
+  }));
+}
+
 export async function getTimeBlock(
   type: TimeBlockType,
   year: number,
   periodIndex: number
 ): Promise<TimeBlock | null> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return null;
 
   const { data, error } = await supabase
@@ -110,7 +163,7 @@ export async function getTimeBlock(
 export async function upsertTimeBlock(
   block: Omit<TimeBlock, 'id' | 'updatedAt' | 'userId'>
 ): Promise<TimeBlock | null> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return null;
 
   const { data, error } = await supabase
@@ -148,7 +201,7 @@ export async function upsertTimeBlock(
  * Tasks
  */
 export async function getTasks(type: TaskType, startDate: string, endDate: string): Promise<Task[]> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return [];
 
   const { data, error } = await supabase
@@ -177,7 +230,7 @@ export async function getTasks(type: TaskType, startDate: string, endDate: strin
 }
 
 export async function createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>): Promise<Task | null> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return null;
 
   const { data, error } = await supabase
@@ -210,7 +263,7 @@ export async function createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedA
 }
 
 export async function updateTask(id: string, updates: Partial<Task>): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return false;
 
   const { error } = await supabase
@@ -231,7 +284,7 @@ export async function updateTask(id: string, updates: Partial<Task>): Promise<bo
 }
 
 export async function deleteTask(id: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
   if (!user) return false;
 
   const { error } = await supabase.from('tasks').delete().eq('id', id).eq('user_id', user.id);

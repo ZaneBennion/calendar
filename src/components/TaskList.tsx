@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Task, TaskType } from '@/types';
-import { getTasks, createTask } from '@/lib/api';
+import { useState } from 'react';
+import { TaskType } from '@/types';
+import { useCalendar } from '@/context/CalendarContext';
 import TaskItem from './TaskItem';
 import styles from './TaskList.module.css';
 
@@ -14,21 +14,12 @@ interface TaskListProps {
 }
 
 export default function TaskList({ type, date, title, className }: TaskListProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { tasks, addTask, loading } = useCalendar();
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState('');
 
-  const fetchTasks = useCallback(async () => {
-    setIsLoading(true);
-    const data = await getTasks(type, date, date);
-    setTasks(data);
-    setIsLoading(false);
-  }, [type, date]);
-
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+  // Filter tasks for this specific list
+  const listTasks = tasks.filter(t => t.type === type && t.date === date);
 
   const handleAddTask = async () => {
     if (!newContent.trim()) {
@@ -36,7 +27,7 @@ export default function TaskList({ type, date, title, className }: TaskListProps
       return;
     }
     
-    await createTask({
+    await addTask({
       type,
       date,
       content: newContent,
@@ -45,7 +36,6 @@ export default function TaskList({ type, date, title, className }: TaskListProps
     
     setNewContent('');
     setIsAdding(false);
-    fetchTasks();
   };
 
   return (
@@ -53,12 +43,10 @@ export default function TaskList({ type, date, title, className }: TaskListProps
       {title && <h3 className={styles.listTitle}>{title}</h3>}
       
       <div className={styles.items}>
-        {tasks.map((task) => (
+        {listTasks.map((task) => (
           <TaskItem
             key={task.id}
             task={task}
-            onUpdate={fetchTasks}
-            onDelete={fetchTasks}
           />
         ))}
         
@@ -82,7 +70,7 @@ export default function TaskList({ type, date, title, className }: TaskListProps
         )}
       </div>
       
-      {!isLoading && tasks.length === 0 && !isAdding && (
+      {!loading && listTasks.length === 0 && !isAdding && (
         <p className={styles.emptyText}>No tasks for this {type === 'day' ? 'day' : 'week'}.</p>
       )}
     </div>

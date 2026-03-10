@@ -11,6 +11,7 @@ import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, getWeekN
 import TaskList from '@/components/TaskList';
 import GoalItem from '@/components/GoalItem';
 import { getSeasonIndexForMonth } from '@/lib/seasons';
+import { useCalendar } from '@/context/CalendarContext';
 
 type Horizon = 'YEAR' | 'SEASON' | 'MONTH' | 'WEEK' | 'DAY';
 
@@ -18,7 +19,8 @@ export default function Home() {
   const [currentHorizon, setCurrentHorizon] = useState<Horizon>('DAY');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [config, setConfig] = useState<AppConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+  const { refreshData } = useCalendar();
   const router = useRouter();
 
   useEffect(() => {
@@ -29,18 +31,64 @@ export default function Home() {
       } else {
         const data = await getAppConfig();
         setConfig(data);
-        setLoading(false);
+        setLoadingConfig(false);
       }
     }
     checkUser();
   }, [router]);
+
+  useEffect(() => {
+    if (loadingConfig) return;
+
+    const year = currentDate.getFullYear();
+    let start: Date;
+    let end: Date;
+
+    // Fetch a slightly wider range to cover view transitions
+    switch (currentHorizon) {
+      case 'YEAR':
+        start = new Date(year, 0, 1);
+        end = new Date(year, 11, 31);
+        break;
+      case 'SEASON': {
+        const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
+        const season = getSeasonForMonth(currentDate.getMonth(), structure);
+        if (season) {
+          start = new Date(year, season.startMonth, 1);
+          end = new Date(year, season.endMonth + 1, 0);
+        } else {
+          start = new Date(year, 0, 1);
+          end = new Date(year, 11, 31);
+        }
+        break;
+      }
+      case 'MONTH':
+        start = new Date(year, currentDate.getMonth(), 1);
+        end = new Date(year, currentDate.getMonth() + 1, 0);
+        // Expand to include partial weeks
+        start.setDate(start.getDate() - 7);
+        end.setDate(end.getDate() + 7);
+        break;
+      case 'WEEK':
+      case 'DAY':
+        start = getStartOfWeek(currentDate);
+        end = new Date(start);
+        end.setDate(end.getDate() + 7);
+        break;
+      default:
+        start = new Date(year, 0, 1);
+        end = new Date(year, 11, 31);
+    }
+
+    refreshData(year, formatDateISO(start), formatDateISO(end));
+  }, [currentDate, currentHorizon, loadingConfig, config, refreshData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
   };
 
-  if (loading) {
+  if (loadingConfig) {
     return <div className={styles.container}>Loading...</div>;
   }
 

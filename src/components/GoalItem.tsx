@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { TimeBlockType } from '@/types';
-import { getTimeBlock, upsertTimeBlock } from '@/lib/api';
+import { useCalendar } from '@/context/CalendarContext';
 import styles from './GoalItem.module.css';
 
 interface GoalItemProps {
@@ -14,32 +14,35 @@ interface GoalItemProps {
 }
 
 export default function GoalItem({ type, year, periodIndex, label, className }: GoalItemProps) {
-  const [content, setContent] = useState('');
+  const { goals, addGoal, loading } = useCalendar();
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchGoal = useCallback(async () => {
-    setIsLoading(true);
-    const goal = await getTimeBlock(type, year, periodIndex);
-    setContent(goal?.content || '');
-    setIsLoading(false);
-  }, [type, year, periodIndex]);
+  // Find the goal in context
+  const goal = goals.find(g => 
+    g.type === type && g.year === year && g.periodIndex === periodIndex
+  );
+  
+  const [tempContent, setTempContent] = useState(goal?.content || '');
 
-  useEffect(() => {
-    fetchGoal();
-  }, [fetchGoal]);
+  // Update temp content when goal changes in context (if not editing)
+  const currentContent = isEditing ? tempContent : (goal?.content || '');
 
   const handleSave = async () => {
-    await upsertTimeBlock({
+    await addGoal({
       type,
       year,
       periodIndex,
-      content
+      content: tempContent
     });
     setIsEditing(false);
   };
 
-  if (isLoading) return <div className={styles.loading}>...</div>;
+  const handleStartEditing = () => {
+    setTempContent(goal?.content || '');
+    setIsEditing(true);
+  };
+
+  if (loading && !goal) return <div className={styles.loading}>...</div>;
 
   return (
     <div className={`${styles.goalItem} ${className || ''}`}>
@@ -49,8 +52,8 @@ export default function GoalItem({ type, year, periodIndex, label, className }: 
         <div className={styles.editMode}>
           <textarea
             className={styles.textarea}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            value={tempContent}
+            onChange={(e) => setTempContent(e.target.value)}
             onBlur={handleSave}
             autoFocus
             placeholder="Set a goal..."
@@ -58,10 +61,10 @@ export default function GoalItem({ type, year, periodIndex, label, className }: 
         </div>
       ) : (
         <div 
-          className={content ? styles.content : styles.placeholder}
-          onClick={() => setIsEditing(true)}
+          className={currentContent ? styles.content : styles.placeholder}
+          onClick={handleStartEditing}
         >
-          {content || `+ Set ${type} goal`}
+          {currentContent || `+ Set ${type} goal`}
         </div>
       )}
     </div>
