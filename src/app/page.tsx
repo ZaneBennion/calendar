@@ -5,7 +5,10 @@ import styles from './page.module.css';
 import { AppConfig, SeasonalStructure } from '@/types';
 import { getAppConfig } from '@/lib/api';
 import { DEFAULT_SEASONAL_STRUCTURE, getSeasonForMonth, getMonthsInSeason } from '@/lib/seasons';
-import { getWeeksInMonth, getStartOfWeek, getDaysInWeek } from '@/lib/date-utils';
+import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, getWeekNumber } from '@/lib/date-utils';
+import TaskList from '@/components/TaskList';
+import GoalItem from '@/components/GoalItem';
+import { getSeasonIndexForMonth } from '@/lib/seasons';
 
 type Horizon = 'YEAR' | 'SEASON' | 'MONTH' | 'WEEK' | 'DAY';
 
@@ -117,25 +120,31 @@ export default function Home() {
 
 function YearView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
   const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
+  const year = currentDate.getFullYear();
 
   return (
     <div className={styles.content}>
-      {/* Yearly Goal */}
-      <div className={styles.horizonBox}>
-        <h2 className={styles.horizonTitle}>North Star Goal</h2>
-        <div className={styles.dashedBox}>+ Set North Star Goal</div>
-      </div>
+      <GoalItem 
+        type="yearly" 
+        year={year} 
+        periodIndex={0} 
+        label="North Star Goal" 
+        className={styles.horizonBox}
+      />
 
-      {/* Seasons Overview */}
       <div className={styles.seasonsGrid}>
         {structure.seasons.map((season, idx) => (
           <div key={idx} className={styles.seasonCard}>
-            <h4 className={styles.seasonTitle}>{season.name}</h4>
+            <GoalItem
+              type="seasonal"
+              year={year}
+              periodIndex={idx}
+              label={season.name}
+            />
             <p className={styles.seasonMonths}>
               {new Date(0, season.startMonth).toLocaleString('default', { month: 'short' })} -{' '}
               {new Date(0, season.endMonth).toLocaleString('default', { month: 'short' })}
             </p>
-            <div className={styles.dashedBox}>+ Goal</div>
           </div>
         ))}
       </div>
@@ -145,31 +154,38 @@ function YearView({ currentDate, config }: { currentDate: Date; config: AppConfi
 
 function SeasonView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
   const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
+  const year = currentDate.getFullYear();
   const season = getSeasonForMonth(currentDate.getMonth(), structure);
+  const seasonIndex = season ? structure.seasons.indexOf(season) : 0;
   const months = season ? getMonthsInSeason(season) : [];
 
   return (
     <div className={styles.content}>
-      {/* Yearly Context */}
-      <div className={styles.subBox}>
-        <h3 className={styles.subTitle}>Yearly Goal</h3>
-        <p className={styles.goalText}>No yearly goal set.</p>
-      </div>
+      <GoalItem 
+        type="yearly" 
+        year={year} 
+        periodIndex={0} 
+        label="Yearly Goal" 
+        className={styles.subBox}
+      />
 
-      {/* Seasonal Goal */}
-      <div className={styles.horizonBox}>
-        <h2 className={styles.horizonTitle}>{season?.name} Goals</h2>
-        <div className={styles.dashedBox}>+ Add Seasonal Goal</div>
-      </div>
+      <GoalItem
+        type="seasonal"
+        year={year}
+        periodIndex={seasonIndex}
+        label={`${season?.name} Goals`}
+        className={styles.horizonBox}
+      />
 
-      {/* Months in Season */}
       <div className={styles.monthsGrid}>
         {months.map((month) => (
           <div key={month} className={styles.monthCard}>
-            <h4 className={styles.monthTitle}>
-              {new Date(0, month).toLocaleString('default', { month: 'long' })}
-            </h4>
-            <div className={styles.dashedBox}>+ Goal</div>
+            <GoalItem
+              type="monthly"
+              year={year}
+              periodIndex={month}
+              label={new Date(0, month).toLocaleString('default', { month: 'long' })}
+            />
           </div>
         ))}
       </div>
@@ -179,28 +195,42 @@ function SeasonView({ currentDate, config }: { currentDate: Date; config: AppCon
 
 function MonthView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
   const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
-  const season = getSeasonForMonth(currentDate.getMonth(), structure);
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const season = getSeasonForMonth(month, structure);
+  const seasonIndex = season ? structure.seasons.indexOf(season) : 0;
   
   return (
     <div className={styles.content}>
-      {/* Seasonal Context */}
-      <div className={styles.subBox}>
-        <h3 className={styles.subTitle}>Seasonal Goal ({season?.name})</h3>
-        <p className={styles.goalText}>No goal set for this season.</p>
-      </div>
+      <GoalItem
+        type="seasonal"
+        year={year}
+        periodIndex={seasonIndex}
+        label={`Seasonal Goal (${season?.name})`}
+        className={styles.subBox}
+      />
 
-      {/* Monthly Goal */}
-      <div className={styles.horizonBox}>
-        <h2 className={styles.horizonTitle}>Monthly Goals</h2>
-        <div className={styles.dashedBox}>+ Add Monthly Goal</div>
-      </div>
+      <GoalItem
+        type="monthly"
+        year={year}
+        periodIndex={month}
+        label="Monthly Goals"
+        className={styles.horizonBox}
+      />
 
-      {/* Weekly Overviews */}
       <div className={styles.weeksGrid}>
-        {getWeeksInMonth(currentDate.getFullYear(), currentDate.getMonth()).map((weekStart, idx) => (
+        {getWeeksInMonth(year, month).map((weekStart, idx) => (
           <div key={weekStart.toISOString()} className={styles.weekCard}>
-            <h4 className={styles.weekTitle}>Week {idx + 1}</h4>
-            <div className={styles.dashedBox}>+ Add Weekly Goal</div>
+            <GoalItem
+              type="weekly"
+              year={weekStart.getFullYear()}
+              periodIndex={getWeekNumber(weekStart)}
+              label={`Week ${idx + 1} Goal`}
+            />
+            <TaskList
+              type="week"
+              date={formatDateISO(weekStart)}
+            />
           </div>
         ))}
       </div>
@@ -211,29 +241,35 @@ function MonthView({ currentDate, config }: { currentDate: Date; config: AppConf
 function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
   const startOfWeek = getStartOfWeek(currentDate);
   const days = getDaysInWeek(startOfWeek);
+  const startOfWeekISO = formatDateISO(startOfWeek);
+  const weekNum = getWeekNumber(startOfWeek);
+  const year = startOfWeek.getFullYear();
 
   return (
     <div className={styles.content}>
-      {/* Weekly Goal */}
-      <div className={styles.horizonBox}>
-        <h2 className={styles.horizonTitle}>Weekly Goal</h2>
-        <div className={styles.dashedBox}>+ Add Weekly Goal</div>
-      </div>
+      <GoalItem
+        type="weekly"
+        year={year}
+        periodIndex={weekNum}
+        label="Weekly Goal"
+        className={styles.horizonBox}
+      />
 
-      {/* Weekly Tasks */}
-      <div className={styles.subBox}>
-        <h3 className={styles.subTitle}>Weekly Tasks</h3>
-        <div className={styles.dashedBox}>+ Add Task to Week</div>
-      </div>
+      <TaskList
+        type="week"
+        date={startOfWeekISO}
+        title="Weekly Tasks"
+        className={styles.subBox}
+      />
 
-      {/* Daily Tasks for the week */}
       <div className={styles.daysGrid}>
         {days.map((day) => (
           <div key={day.toISOString()} className={styles.dayCard}>
-            <h4 className={styles.dayTitle}>
-              {day.toLocaleDateString('default', { weekday: 'short', day: 'numeric' })}
-            </h4>
-            <div className={styles.dashedBox}>+ Task</div>
+            <TaskList
+              type="day"
+              date={formatDateISO(day)}
+              title={day.toLocaleDateString('default', { weekday: 'short', day: 'numeric' })}
+            />
           </div>
         ))}
       </div>
@@ -242,18 +278,26 @@ function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfi
 }
 
 function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
+  const dateISO = formatDateISO(currentDate);
+  const startOfWeek = getStartOfWeek(currentDate);
+  const weekNum = getWeekNumber(startOfWeek);
+
   return (
     <div className={styles.content}>
-      {/* Weekly Context */}
-      <div className={styles.subBox}>
-        <h3 className={styles.subTitle}>Weekly Goal</h3>
-        <p className={styles.goalText}>No weekly goal set.</p>
-      </div>
+      <GoalItem
+        type="weekly"
+        year={startOfWeek.getFullYear()}
+        periodIndex={weekNum}
+        label="Weekly Goal"
+        className={styles.subBox}
+      />
 
-      {/* Daily Tasks */}
       <div className={styles.horizonBox}>
-        <h2 className={styles.horizonTitle}>Tasks for Today</h2>
-        <div className={styles.dashedBox}>+ Add Daily Task</div>
+        <TaskList
+          type="day"
+          date={dateISO}
+          title="Tasks for Today"
+        />
       </div>
     </div>
   );

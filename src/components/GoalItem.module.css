@@ -1,0 +1,62 @@
+.goalItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.content {
+  font-size: 1.125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+}
+
+.content:hover {
+  border-color: var(--faded);
+}
+
+.placeholder {
+  font-size: 1rem;
+  color: var(--dashed);
+  border: 1px dashed var(--dashed);
+  padding: 1rem;
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+}
+
+.placeholder:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.editMode {
+  width: 100%;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.5rem;
+  font-family: inherit;
+  font-size: 1.125rem;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius);
+  outline: none;
+  resize: vertical;
+}
+
+.loading {
+  font-size: 0.875rem;
+  color: var(--dashed);
+  padding: 1rem;
+}

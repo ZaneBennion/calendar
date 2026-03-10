@@ -1,0 +1,54 @@
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.listTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.addItemBox {
+  padding: 0.5rem;
+  border: 1px solid var(--foreground);
+  border-radius: var(--radius);
+}
+
+.addInput {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.9375rem;
+}
+
+.dashedBox {
+  border: 1px dashed var(--dashed);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  color: var(--dashed);
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.dashedBox:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: var(--dashed);
+  font-style: italic;
+}
