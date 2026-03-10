@@ -95,7 +95,7 @@ Weeks can have goals and tasks. Days can only have tasks.
 ## 4. Implementation Roadmap
 1. [x] **Scaffold Project:** Initialize Next.js, install `@supabase/supabase-js` and `@ducanh2912/next-pwa`.
 2. [x] **PWA Configuration:** Setup manifest and service worker.
-3. [ ] **Configuration Engine:** Build the logic for defining seasons and saving/loading themes.
+3. [x] **Configuration Engine:** Build the logic for defining seasons and saving/loading themes.
 4. [ ] **Horizon UI:** Build the responsive, boxy layouts for each time horizon.
 5. [ ] **Task System:** Implement CRUD for checkable tasks in Weekly/Daily views.
 6. [ ] **Data Sync:** Connect all views to Supabase.
