@@ -16,7 +16,7 @@ A minimal, boxy, monochrome task and goal manager built with Next.js and Supabas
 The application is centered around nested time horizons, moving from broad intentions to daily actions.
 There are goals which are just text fields to remind and keep on track. Years, seasons, and months can only have goals.
 Then there are tasks which can be checked-off and rescheduled, tasks can be scheduled to a specific day or a week.
-Weeks can have goals and tasks. Days can only have tasks. 
+Weeks can only have tasks. Days can only have tasks. 
 
 **Logic Rules:**
 - **Week Start:** Sunday.
@@ -32,13 +32,12 @@ Weeks can have goals and tasks. Days can only have tasks.
 - **Content:**
     - View seasonal goal(s).
     - Set monthly goals (non-checkable text).
-    - Set weekly goals (non-checkable text) for each week in the month (any week touching the month).
     - View/Manage tasks assigned to specific days or specific weeks.
 
 ### Weekly View
 - **Purpose:** Focus on the current week's objectives.
 - **Content:**
-    - Set weekly goals (non-checkable text).
+    - View/edit Monthly Goal.
     - Manage "Weekly Tasks" (checkable tasks not tied to a specific day).
     - View/Create tasks for each individual day in the week.
     - Reschedule tasks (move between days or move from a day to the "week" level).
@@ -46,7 +45,7 @@ Weeks can have goals and tasks. Days can only have tasks.
 ### Daily View
 - **Purpose:** Execute the day's tasks.
 - **Content:**
-    - View weekly goals and "Weekly Tasks".
+    - View "Weekly Tasks".
     - View/Create/Manage tasks for the specific day.
     - Reschedule tasks (move to another day or back to the "week" level).
 
@@ -62,9 +61,9 @@ Weeks can have goals and tasks. Days can only have tasks.
 
 ### `time_blocks`
 - `id`: primary key
-- `type`: enum ('yearly', 'seasonal', 'monthly', 'weekly')
+- `type`: enum ('yearly', 'seasonal', 'monthly')
 - `year`: integer
-- `period_index`: integer (month number, week number, or season index)
+- `period_index`: integer (month number or season index)
 - `content`: text (the theme/goal)
 - `updated_at`: timestamp
 

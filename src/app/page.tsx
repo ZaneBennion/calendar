@@ -305,15 +305,10 @@ function MonthView({ currentDate, config }: { currentDate: Date; config: AppConf
         <div className={styles.weeksGrid}>
           {getWeeksInMonth(year, month).map((weekStart, idx) => (
             <div key={weekStart.toISOString()} className={styles.weekCard}>
-              <GoalItem
-                type="weekly"
-                year={weekStart.getFullYear()}
-                periodIndex={getWeekNumber(weekStart)}
-                label={`Week ${idx + 1} Goal (${formatWeekRange(weekStart)})`}
-              />
               <TaskList
                 type="week"
                 date={formatDateISO(weekStart)}
+                title={`Week ${idx + 1} (${formatWeekRange(weekStart)})`}
               />
             </div>
           ))}
@@ -327,17 +322,16 @@ function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfi
   const startOfWeek = getStartOfWeek(currentDate);
   const days = getDaysInWeek(startOfWeek);
   const startOfWeekISO = formatDateISO(startOfWeek);
-  const weekNum = getWeekNumber(startOfWeek);
   const year = startOfWeek.getFullYear();
 
   return (
     <div className={styles.twoColumnLayout}>
       <div className={styles.leftColumn}>
         <GoalItem
-          type="weekly"
-          year={year}
-          periodIndex={weekNum}
-          label="Weekly Goal"
+          type="monthly"
+          year={currentDate.getFullYear()}
+          periodIndex={currentDate.getMonth()}
+          label={`${currentDate.toLocaleString('default', { month: 'long' })} Goal`}
           className={styles.horizonBox}
         />
 
@@ -370,19 +364,10 @@ function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig
   const dateISO = formatDateISO(currentDate);
   const startOfWeek = getStartOfWeek(currentDate);
   const startOfWeekISO = formatDateISO(startOfWeek);
-  const weekNum = getWeekNumber(startOfWeek);
 
   return (
     <div className={styles.twoColumnLayout}>
       <div className={styles.leftColumn}>
-        <GoalItem
-          type="weekly"
-          year={startOfWeek.getFullYear()}
-          periodIndex={weekNum}
-          label="Weekly Goal"
-          className={styles.subBox}
-        />
-
         <TaskList
           type="week"
           date={startOfWeekISO}

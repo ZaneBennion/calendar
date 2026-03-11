@@ -8,13 +8,13 @@ export type SeasonDefinition = {
   endMonth: number;   // 0-indexed
 };
 
-export type TimeBlockType = 'yearly' | 'seasonal' | 'monthly' | 'weekly';
+export type TimeBlockType = 'yearly' | 'seasonal' | 'monthly';
 
 export type TimeBlock = {
   id: string;
   type: TimeBlockType;
   year: number;
-  periodIndex: number; // month (0-11), week (1-53), or season index
+  periodIndex: number; // month (0-11) or season index
   content: string;
   updatedAt: string;
   userId: string;
