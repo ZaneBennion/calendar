@@ -368,6 +368,7 @@ function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfi
 function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
   const dateISO = formatDateISO(currentDate);
   const startOfWeek = getStartOfWeek(currentDate);
+  const startOfWeekISO = formatDateISO(startOfWeek);
   const weekNum = getWeekNumber(startOfWeek);
 
   return (
@@ -378,6 +379,13 @@ function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig
           year={startOfWeek.getFullYear()}
           periodIndex={weekNum}
           label="Weekly Goal"
+          className={styles.subBox}
+        />
+
+        <TaskList
+          type="week"
+          date={startOfWeekISO}
+          title="Weekly Tasks"
           className={styles.subBox}
         />
       </div>
