@@ -64,3 +64,21 @@ export function getDaysInWeek(startOfWeek: Date): Date[] {
   }
   return days;
 }
+
+/**
+ * Formats a week range (e.g., "Mar 1 - 7" or "Mar 29 - Apr 4").
+ */
+export function formatWeekRange(start: Date): string {
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  
+  const startMonth = start.toLocaleDateString('default', { month: 'short' });
+  const endMonth = end.toLocaleDateString('default', { month: 'short' });
+  
+  if (startMonth === endMonth) {
+    return `${startMonth} ${start.getDate()} - ${end.getDate()}`;
+  } else {
+    return `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}`;
+  }
+}
+

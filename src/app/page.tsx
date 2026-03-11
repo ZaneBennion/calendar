@@ -7,7 +7,7 @@ import styles from './page.module.css';
 import { AppConfig, SeasonalStructure } from '@/types';
 import { getAppConfig } from '@/lib/api';
 import { DEFAULT_SEASONAL_STRUCTURE, getSeasonForMonth, getMonthsInSeason } from '@/lib/seasons';
-import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, getWeekNumber } from '@/lib/date-utils';
+import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, getWeekNumber, formatWeekRange } from '@/lib/date-utils';
 import TaskList from '@/components/TaskList';
 import GoalItem from '@/components/GoalItem';
 import { getSeasonIndexForMonth } from '@/lib/seasons';
@@ -140,13 +140,14 @@ export default function Home() {
       case 'MONTH':
         return currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
       case 'WEEK': {
-        // Just show month and year for now, maybe add week number
-        return `Week of ${currentDate.toLocaleDateString('default', { month: 'short', day: 'numeric' })}`;
+        const start = getStartOfWeek(currentDate);
+        return formatWeekRange(start);
       }
       case 'DAY':
         return currentDate.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' });
     }
   };
+
 
   const horizons: Horizon[] = ['YEAR', 'SEASON', 'MONTH', 'WEEK', 'DAY'];
 
@@ -308,7 +309,7 @@ function MonthView({ currentDate, config }: { currentDate: Date; config: AppConf
                 type="weekly"
                 year={weekStart.getFullYear()}
                 periodIndex={getWeekNumber(weekStart)}
-                label={`Week ${idx + 1} Goal`}
+                label={`Week ${idx + 1} Goal (${formatWeekRange(weekStart)})`}
               />
               <TaskList
                 type="week"
@@ -343,7 +344,7 @@ function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfi
         <TaskList
           type="week"
           date={startOfWeekISO}
-          title="Weekly Tasks"
+          title={`Weekly Tasks (${formatWeekRange(startOfWeek)})`}
           className={styles.subBox}
         />
       </div>
@@ -385,7 +386,7 @@ function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig
         <TaskList
           type="week"
           date={startOfWeekISO}
-          title="Weekly Tasks"
+          title={`Weekly Tasks (${formatWeekRange(startOfWeek)})`}
           className={styles.subBox}
         />
       </div>
