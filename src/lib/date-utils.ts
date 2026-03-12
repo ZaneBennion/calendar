@@ -1,18 +1,23 @@
 /**
- * Formats a date to ISO string (YYYY-MM-DD).
+ * Formats a date to ISO string (YYYY-MM-DD) using local time.
  */
 export function formatDateISO(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 /**
- * Returns the start of the week (Sunday) for a given date.
+ * Returns the start of the week (Sunday) for a given date, normalized to midnight.
  */
 export function getStartOfWeek(date: Date): Date {
   const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
   const day = d.getDay();
   const diff = d.getDate() - day;
-  return new Date(d.setDate(diff));
+  d.setDate(diff);
+  return d;
 }
 
 /**
