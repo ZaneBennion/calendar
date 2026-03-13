@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Task, TaskType } from '@/types';
 import { useCalendar } from '@/context/CalendarContext';
-import { getStartOfWeek, formatDateISO } from '@/lib/date-utils';
+import { getStartOfWeek, formatDateISO, parseDateISO } from '@/lib/date-utils';
 import styles from './TaskModal.module.css';
 
 interface TaskModalProps {
@@ -33,7 +33,7 @@ export default function TaskModal({ task, initialData, onClose }: TaskModalProps
 
     let finalDate = date;
     if (type === 'week') {
-      const d = new Date(date);
+      const d = parseDateISO(date);
       const startOfWeek = getStartOfWeek(d);
       finalDate = formatDateISO(startOfWeek);
     }

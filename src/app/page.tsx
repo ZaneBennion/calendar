@@ -1,27 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 import { AppConfig, SeasonalStructure } from '@/types';
 import { getAppConfig } from '@/lib/api';
 import { DEFAULT_SEASONAL_STRUCTURE, getSeasonForMonth, getMonthsInSeason } from '@/lib/seasons';
-import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, getWeekNumber, formatWeekRange } from '@/lib/date-utils';
+import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, parseDateISO, getWeekNumber, formatWeekRange } from '@/lib/date-utils';
 import TaskList from '@/components/TaskList';
 import GoalItem from '@/components/GoalItem';
-import { getSeasonIndexForMonth } from '@/lib/seasons';
 import { useCalendar } from '@/context/CalendarContext';
 
 type Horizon = 'YEAR' | 'SEASON' | 'MONTH' | 'WEEK' | 'DAY';
 
-export default function Home() {
-  const [currentHorizon, setCurrentHorizon] = useState<Horizon>('DAY');
-  const [currentDate, setCurrentDate] = useState(new Date());
+function CalendarHome() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  const horizonParam = searchParams.get('horizon') as Horizon | null;
+  const dateParam = searchParams.get('date');
+
+  const currentHorizon = horizonParam || 'DAY';
+  const currentDate = dateParam ? parseDateISO(dateParam) : new Date();
+
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
   const { refreshData } = useCalendar();
-  const router = useRouter();
+
+  const setParams = (newHorizon: Horizon, newDate: Date) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('horizon', newHorizon);
+    params.set('date', formatDateISO(newDate));
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   useEffect(() => {
     async function checkUser() {
@@ -66,7 +79,7 @@ export default function Home() {
         start = new Date(year, currentDate.getMonth(), 1);
         end = new Date(year, currentDate.getMonth() + 1, 0);
         // Expand to include partial weeks
-        start.setDate(start.getDate() - 7);
+        start.setDate(start.setDate() - 7);
         end.setDate(end.getDate() + 7);
         break;
       case 'WEEK':
@@ -104,7 +117,6 @@ export default function Home() {
         const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
         const currentSeason = getSeasonForMonth(currentDate.getMonth(), structure);
         if (currentSeason) {
-          // Find next season start
           if (direction === 'NEXT') {
             newDate.setMonth(currentSeason.endMonth + 1);
           } else {
@@ -125,7 +137,11 @@ export default function Home() {
         newDate.setDate(currentDate.getDate() + multiplier);
         break;
     }
-    setCurrentDate(newDate);
+    setParams(currentHorizon, newDate);
+  };
+
+  const handleToday = () => {
+    setParams(currentHorizon, new Date());
   };
 
   const getHeaderTitle = () => {
@@ -159,7 +175,7 @@ export default function Home() {
             <button
               key={h}
               className={`${styles.navButton} ${currentHorizon === h ? styles.navButtonActive : ''}`}
-              onClick={() => setCurrentHorizon(h)}
+              onClick={() => setParams(h, currentDate)}
             >
               {h}
             </button>
@@ -174,7 +190,12 @@ export default function Home() {
         <button className={styles.actionButton} onClick={() => navigateTime('PREV')}>
           &lt;
         </button>
-        <h1 className={styles.headerTitle}>{getHeaderTitle()}</h1>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+          <h1 className={styles.headerTitle}>{getHeaderTitle()}</h1>
+          <button className={styles.todayButton} onClick={handleToday}>
+            Today
+          </button>
+        </div>
         <button className={styles.actionButton} onClick={() => navigateTime('NEXT')}>
           &gt;
         </button>
@@ -188,6 +209,14 @@ export default function Home() {
         {currentHorizon === 'DAY' && <DayView currentDate={currentDate} config={config} />}
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className={styles.container}>Loading...</div>}>
+      <CalendarHome />
+    </Suspense>
   );
 }
 

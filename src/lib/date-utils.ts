@@ -9,6 +9,14 @@ export function formatDateISO(date: Date): string {
 }
 
 /**
+ * Parses a YYYY-MM-DD string as local time.
+ */
+export function parseDateISO(dateStr: string): Date {
+  const [yyyy, mm, dd] = dateStr.split('-').map(Number);
+  return new Date(yyyy, mm - 1, dd);
+}
+
+/**
  * Returns the start of the week (Sunday) for a given date, normalized to midnight.
  */
 export function getStartOfWeek(date: Date): Date {
