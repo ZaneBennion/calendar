@@ -272,6 +272,7 @@ export async function updateTask(id: string, updates: Partial<Task>): Promise<bo
       content: updates.content,
       is_completed: updates.isCompleted,
       date: updates.date,
+      type: updates.type,
     })
     .eq('id', id)
     .eq('user_id', user.id);

@@ -11,8 +11,7 @@ interface CalendarContextType {
   refreshData: (year: number, startDate: string, endDate: string) => Promise<void>;
   addGoal: (goal: Omit<TimeBlock, 'id' | 'updatedAt' | 'userId'>) => Promise<void>;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
-  updateTaskStatus: (id: string, isCompleted: boolean) => Promise<void>;
-  updateTaskContent: (id: string, content: string) => Promise<void>;
+  updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
 }
 
@@ -73,6 +72,13 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateTaskGeneral = async (id: string, updates: Partial<Task>) => {
+    const success = await updateTask(id, updates);
+    if (success) {
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    }
+  };
+
   const deleteTask = async (id: string) => {
     const success = await apiDeleteTask(id);
     if (success) {
@@ -90,6 +96,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
       addTask,
       updateTaskStatus,
       updateTaskContent,
+      updateTask: updateTaskGeneral,
       deleteTask
     }}>
       {children}

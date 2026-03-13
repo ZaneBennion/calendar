@@ -44,6 +44,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <CalendarProvider>
           {children}
+          <div id="modal-root" />
         </CalendarProvider>
       </body>
     </html>

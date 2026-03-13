@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Task } from '@/types';
 import { useCalendar } from '@/context/CalendarContext';
+import TaskModal from './TaskModal';
 import styles from './TaskItem.module.css';
 
 interface TaskItemProps {
@@ -10,58 +11,36 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task }: TaskItemProps) {
-  const { updateTaskStatus, updateTaskContent, deleteTask } = useCalendar();
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempContent, setTempContent] = useState(task.content);
+  const { updateTaskStatus } = useCalendar();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sync temp content if task changes externally
-  useEffect(() => {
-    if (!isEditing) {
-      setTempContent(task.content);
-    }
-  }, [task.content, isEditing]);
-
-  const handleToggle = async () => {
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     await updateTaskStatus(task.id, !task.isCompleted);
   };
 
-  const handleSave = async () => {
-    if (tempContent.trim() !== task.content) {
-      await updateTaskContent(task.id, tempContent);
-    }
-    setIsEditing(false);
-  };
-
-  const handleDelete = async () => {
-    if (confirm('Delete this task?')) {
-      await deleteTask(task.id);
-    }
-  };
-
   return (
-    <div className={`${styles.taskItem} ${task.isCompleted ? styles.completed : ''}`}>
-      <button 
-        className={`${styles.checkbox} ${task.isCompleted ? styles.checked : ''}`} 
-        onClick={handleToggle}
-      />
-      
-      {isEditing ? (
-        <input
-          type="text"
-          className={styles.editInput}
-          value={tempContent}
-          onChange={(e) => setTempContent(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-          autoFocus
+    <>
+      <div 
+        className={`${styles.taskItem} ${task.isCompleted ? styles.completed : ''}`}
+        onClick={() => setIsModalOpen(true)}
+      >
+        <button 
+          className={`${styles.checkbox} ${task.isCompleted ? styles.checked : ''}`} 
+          onClick={handleToggle}
         />
-      ) : (
-        <span className={styles.content} onClick={() => setIsEditing(true)}>
+        
+        <span className={styles.content}>
           {task.content}
         </span>
-      )}
+      </div>
 
-      <button className={styles.deleteBtn} onClick={handleDelete}>×</button>
-    </div>
+      {isModalOpen && (
+        <TaskModal 
+          task={task} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
+    </>
   );
 }
