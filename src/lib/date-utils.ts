@@ -55,7 +55,7 @@ export function getWeeksInMonth(year: number, month: number): Date[] {
   const lastDay = new Date(year, month + 1, 0);
   
   const weeks: Date[] = [];
-  let current = getStartOfWeek(firstDay);
+  const current = getStartOfWeek(firstDay);
   
   while (current <= lastDay) {
     weeks.push(new Date(current));

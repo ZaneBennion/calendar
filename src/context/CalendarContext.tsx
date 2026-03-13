@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Task, TimeBlock, TaskType, TimeBlockType } from '@/types';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { Task, TimeBlock } from '@/types';
 import { getTimeBlocksForYear, getTasks, upsertTimeBlock, createTask, updateTask, deleteTask as apiDeleteTask } from '@/lib/api';
 
 interface CalendarContextType {
@@ -11,6 +11,8 @@ interface CalendarContextType {
   refreshData: (year: number, startDate: string, endDate: string) => Promise<void>;
   addGoal: (goal: Omit<TimeBlock, 'id' | 'updatedAt' | 'userId'>) => Promise<void>;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => Promise<void>;
+  updateTaskStatus: (id: string, isCompleted: boolean) => Promise<void>;
+  updateTaskContent: (id: string, content: string) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
 }

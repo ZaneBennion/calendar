@@ -1,3 +1,4 @@
+import { User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { AppConfig, TimeBlock, TimeBlockType, SeasonalStructure, TaskType, Task } from '../types';
 import { DEFAULT_SEASONAL_STRUCTURE } from './seasons';
@@ -5,11 +6,11 @@ import { DEFAULT_SEASONAL_STRUCTURE } from './seasons';
 /**
  * Helper to get the authenticated user with error handling for AbortErrors (Supabase locks)
  */
-let cachedUser: any = null;
+let cachedUser: User | null = null;
 let lastFetchTime = 0;
 const CACHE_TTL = 1000; // 1 second cache to prevent concurrent spam
 
-async function getAuthenticatedUser() {
+async function getAuthenticatedUser(): Promise<User | null> {
   const now = Date.now();
   if (cachedUser && (now - lastFetchTime < CACHE_TTL)) {
     return cachedUser;
@@ -20,8 +21,8 @@ async function getAuthenticatedUser() {
     cachedUser = user;
     lastFetchTime = now;
     return user;
-  } catch (error: any) {
-    if (error.name === 'AbortError' || error.message?.includes('lock request')) {
+  } catch (error: unknown) {
+    if (error instanceof Error && (error.name === 'AbortError' || error.message?.includes('lock request'))) {
       console.warn('Supabase lock request aborted, using cached user or returning null.');
       return cachedUser; // Fallback to last known user
     }

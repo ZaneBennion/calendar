@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
-import { AppConfig, SeasonalStructure } from '@/types';
+import { AppConfig } from '@/types';
 import { getAppConfig } from '@/lib/api';
 import { DEFAULT_SEASONAL_STRUCTURE, getSeasonForMonth, getMonthsInSeason } from '@/lib/seasons';
-import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, parseDateISO, getWeekNumber, formatWeekRange } from '@/lib/date-utils';
+import { getWeeksInMonth, getStartOfWeek, getDaysInWeek, formatDateISO, parseDateISO, formatWeekRange } from '@/lib/date-utils';
 import TaskList from '@/components/TaskList';
 import GoalItem from '@/components/GoalItem';
 import { useCalendar } from '@/context/CalendarContext';
@@ -23,7 +23,7 @@ function CalendarHome() {
   const dateParam = searchParams.get('date');
 
   const currentHorizon = horizonParam || 'DAY';
-  const currentDate = dateParam ? parseDateISO(dateParam) : new Date();
+  const currentDate = useMemo(() => dateParam ? parseDateISO(dateParam) : new Date(), [dateParam]);
 
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -79,7 +79,7 @@ function CalendarHome() {
         start = new Date(year, currentDate.getMonth(), 1);
         end = new Date(year, currentDate.getMonth() + 1, 0);
         // Expand to include partial weeks
-        start.setDate(start.setDate() - 7);
+        start.setDate(start.getDate() - 7);
         end.setDate(end.getDate() + 7);
         break;
       case 'WEEK':
@@ -205,8 +205,8 @@ function CalendarHome() {
         {currentHorizon === 'YEAR' && <YearView currentDate={currentDate} config={config} />}
         {currentHorizon === 'SEASON' && <SeasonView currentDate={currentDate} config={config} />}
         {currentHorizon === 'MONTH' && <MonthView currentDate={currentDate} config={config} />}
-        {currentHorizon === 'WEEK' && <WeekView currentDate={currentDate} config={config} />}
-        {currentHorizon === 'DAY' && <DayView currentDate={currentDate} config={config} />}
+        {currentHorizon === 'WEEK' && <WeekView currentDate={currentDate} />}
+        {currentHorizon === 'DAY' && <DayView currentDate={currentDate} />}
       </main>
     </div>
   );
@@ -304,9 +304,9 @@ function SeasonView({ currentDate, config }: { currentDate: Date; config: AppCon
 }
 
 function MonthView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
-  const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+  const structure = config?.seasonalStructure || DEFAULT_SEASONAL_STRUCTURE;
   const season = getSeasonForMonth(month, structure);
   const seasonIndex = season ? structure.seasons.indexOf(season) : 0;
   
@@ -347,11 +347,10 @@ function MonthView({ currentDate, config }: { currentDate: Date; config: AppConf
   );
 }
 
-function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
+function WeekView({ currentDate }: { currentDate: Date }) {
   const startOfWeek = getStartOfWeek(currentDate);
   const days = getDaysInWeek(startOfWeek);
   const startOfWeekISO = formatDateISO(startOfWeek);
-  const year = startOfWeek.getFullYear();
 
   return (
     <div className={styles.twoColumnLayout}>
@@ -389,7 +388,7 @@ function WeekView({ currentDate, config }: { currentDate: Date; config: AppConfi
   );
 }
 
-function DayView({ currentDate, config }: { currentDate: Date; config: AppConfig | null }) {
+function DayView({ currentDate }: { currentDate: Date }) {
   const dateISO = formatDateISO(currentDate);
   const startOfWeek = getStartOfWeek(currentDate);
   const startOfWeekISO = formatDateISO(startOfWeek);
